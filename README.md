@@ -3,9 +3,9 @@ Dovecot Virtual Keywords Plugin
 
 > This plugin is a work in progress.
 
-This plugin will automatically create a virtual mailbox whenever a new keyword
-is set on a message. It will also create the dovecot-virtual file needed to
-map the new keyword onto a virtual mailbox:
+This plugin will automatically create a [virtual mailbox](https://wiki2.dovecot.org/Plugins/Virtual)
+whenever a new keyword is set on a message. It will also create the dovecot-virtual
+file needed to map the new keyword onto a virtual mailbox:
 
 ```
 Virtual.All
