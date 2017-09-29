@@ -14,21 +14,21 @@ Virtual.All
 
 On mail user creation, it will also create the following default mailboxes:
 
-All (all messages expect Trash):
+* All (all messages expect Trash)
 
-```
-*
--Trash
--Trash/*
-  all
-```
+    ```
+    *
+    -Trash
+    -Trash/*
+      all
+    ```
 
-Starred (all flagged messages):
+* Starred (all flagged messages)
 
-```
-Virtual.All
-  starred
-```
+    ```
+    Virtual.All
+      starred
+    ```
 
 ## Dovecot configuration
 
