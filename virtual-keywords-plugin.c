@@ -183,7 +183,6 @@ void
 virtual_keywords_plugin_init(struct module *module)
 {
     virtual_keywords_ctx = notify_register(&virtual_keywords_vfuncs);
-    i_info("notify registered at %p", virtual_keywords_ctx);
     mail_storage_hooks_add(module, &virtual_keywords_mail_storage_hooks);
 }
 
