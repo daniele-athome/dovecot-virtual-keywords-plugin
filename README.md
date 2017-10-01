@@ -1,7 +1,7 @@
 Dovecot Virtual Keywords Plugin
 ===============================
 
-> This plugin is a work in progress.
+> This plugin needs massive testing.
 
 This plugin will automatically create a [virtual mailbox](https://wiki2.dovecot.org/Plugins/Virtual)
 whenever a new keyword is set on a message. It will also create the dovecot-virtual
