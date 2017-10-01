@@ -12,10 +12,7 @@ Virtual.All
   keyword Important
 ```
 
-In addition to that, when a keyword is set on a message, this plugin will set the
-same keyword to all messages in that thread.
-
-On mail user creation, it will also create the following default mailboxes:
+On user login, it will also create the following default mailboxes if necessary:
 
 * All (all messages expect Trash)
 
@@ -73,3 +70,8 @@ plugin {
   virtual_keywords_prefix = "Virtual."
 }
 ```
+
+## TODO
+
+* When a keyword is set on a message, set the same keyword to all messages in that thread
+* Delete a virtual mailbox if there are no more messages with that keyword
