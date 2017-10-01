@@ -33,13 +33,26 @@ On mail user creation, it will also create the following default mailboxes:
       FLAGGED
     ```
 
+## Install
+
+We use CMake. Make sure to install Dovecot headers before building.
+
+```
+mkdir build
+cd build
+cmake ..
+make
+```
+
+Then copy libvirtual_keywords_plugin.so into Dovecot modules directory, usually `/usr/lib/dovecot/modules`.
+
 ## Dovecot configuration
 
 In order for this plugin to work, you need to configure a new namespace in
 Dovecot for hosting virtual mailboxes.
 
 ```
-mail_plugins = $mail_plugins virtual
+mail_plugins = $mail_plugins virtual notify virtual_keywords
 
 namespace {
   type = private
