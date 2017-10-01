@@ -30,7 +30,7 @@ On mail user creation, it will also create the following default mailboxes:
 
     ```
     Virtual.All
-      starred
+      FLAGGED
     ```
 
 ## Dovecot configuration
@@ -47,5 +47,16 @@ namespace {
   separator = .
   location = virtual:~/Maildir/virtual
   list = yes
+}
+```
+
+The plugin accepts the following parameters:
+
+```
+plugin {
+  ...
+
+  # namespace prefix where virtual storage is configured
+  virtual_keywords_prefix = "Virtual."
 }
 ```

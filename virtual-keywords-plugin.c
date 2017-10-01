@@ -12,7 +12,13 @@
 #define MAILBOX_NAME_LOG_LEN 64
 #define VIRTUAL_KEYWORDS_DEFAULT_PREFIX "Virtual."
 
-#define VIRTUAL_KEYWORDS_MAILBOX_ALL    "All"
+#define VIRTUAL_KEYWORDS_MAILBOX_ALL        "All"
+#define VIRTUAL_KEYWORDS_MAILBOX_STARRED    "Starred"
+
+#define VIRTUAL_KEYWORDS_PATTERN_ALL    "*\n-Trash\n-Trash/*"
+#define VIRTUAL_KEYWORDS_SEARCH_ALL     "ALL"
+#define VIRTUAL_KEYWORDS_SEARCH_STARRED "FLAGGED"
+
 #define VIRTUAL_KEYWORDS_SEARCH_PREFIX  "KEYWORD "
 #define VIRTUAL_CONFIG_FNAME            "dovecot-virtual"
 
@@ -30,12 +36,12 @@ static MODULE_CONTEXT_DEFINE_INIT(virtual_keywords_user_module,
 
 
 static bool
-virtual_keywords_create_mailbox(struct mailbox *box, const char *name, const char *rules)
+virtual_keywords_create_mailbox(struct mail_user *user, const char *name, const char *rules)
 {
     struct virtual_keywords_user *muser =
-            VIRTUAL_KEYWORDS_USER_CONTEXT(box->storage->user);
+            VIRTUAL_KEYWORDS_USER_CONTEXT(user);
 
-    struct mail_namespace *ns = mail_namespace_find_prefix(box->storage->user->namespaces, muser->prefix);
+    struct mail_namespace *ns = mail_namespace_find_prefix(user->namespaces, muser->prefix);
     if (ns == NULL) {
         i_error("Unable to find namespace with prefix %s. Did you configure it?", muser->prefix);
         return FALSE;
@@ -92,9 +98,21 @@ virtual_keywords_create_mailbox(struct mailbox *box, const char *name, const cha
 }
 
 static const char *
-virtual_keywords_create_rule(const char *prefix, const char *name)
+virtual_keywords_create_keyword_rule(const char *prefix, const char *name)
 {
     return t_strconcat(prefix, VIRTUAL_KEYWORDS_MAILBOX_ALL, "\n  ", VIRTUAL_KEYWORDS_SEARCH_PREFIX, name, "\n", NULL);
+}
+
+static const char *
+virtual_keywords_create_child_rule(const char *prefix, const char *search)
+{
+    return t_strconcat(prefix, VIRTUAL_KEYWORDS_MAILBOX_ALL, "\n  ", search, "\n", NULL);
+}
+
+static const char *
+virtual_keywords_create_rule(const char *patterns, const char *search)
+{
+    return t_strconcat(patterns, "\n  ", search, "\n", NULL);
 }
 
 static void
@@ -108,22 +126,33 @@ virtual_keywords_mail_update_keywords(void *txn, struct mail *mail,
     unsigned int i;
 
     for (i = 0; keywords[i] != NULL; i++) {
-        virtual_keywords_create_mailbox(mail->box, keywords[i],
-            virtual_keywords_create_rule(muser->prefix, keywords[i]));
+        virtual_keywords_create_mailbox(mail->box->storage->user, keywords[i],
+            virtual_keywords_create_keyword_rule(muser->prefix, keywords[i]));
     }
 }
 
 static void
-virtual_keywords_mailbox_create(struct mailbox *box)
+virtual_keywords_mail_namespaces_created(struct mail_namespace *namespaces)
 {
-    i_info("Mailbox created: %s",
-           str_sanitize(mailbox_get_vname(box), MAILBOX_NAME_LOG_LEN));
+    struct virtual_keywords_user *muser =
+            VIRTUAL_KEYWORDS_USER_CONTEXT(namespaces->user);
+
+    // create default virtual folders (All, Starred, ...)
+    i_info("Namespaces created for %s",
+           str_sanitize(namespaces->user->username, MAILBOX_NAME_LOG_LEN));
+
+    // All messages except Trash
+    virtual_keywords_create_mailbox(namespaces->user, VIRTUAL_KEYWORDS_MAILBOX_ALL,
+        virtual_keywords_create_rule(VIRTUAL_KEYWORDS_PATTERN_ALL, VIRTUAL_KEYWORDS_SEARCH_ALL));
+
+    // All flagged messages
+    virtual_keywords_create_mailbox(namespaces->user, VIRTUAL_KEYWORDS_MAILBOX_STARRED,
+        virtual_keywords_create_child_rule(muser->prefix, VIRTUAL_KEYWORDS_SEARCH_STARRED));
 }
 
 static void
 virtual_keywords_mail_user_created(struct mail_user *user)
 {
-    // TODO create default virtual folders (All, Starred, ...)
     i_info("user created %s", user->username);
 
     struct virtual_keywords_user *muser;
@@ -140,14 +169,14 @@ virtual_keywords_mail_user_created(struct mail_user *user)
 
 
 static const struct notify_vfuncs virtual_keywords_vfuncs = {
-    .mail_update_keywords = virtual_keywords_mail_update_keywords,
-    .mailbox_create = virtual_keywords_mailbox_create,
+    .mail_update_keywords = virtual_keywords_mail_update_keywords
 };
 
 static struct notify_context *virtual_keywords_ctx;
 
 static struct mail_storage_hooks virtual_keywords_mail_storage_hooks = {
-    .mail_user_created = virtual_keywords_mail_user_created
+    .mail_user_created = virtual_keywords_mail_user_created,
+    .mail_namespaces_created = virtual_keywords_mail_namespaces_created
 };
 
 void
