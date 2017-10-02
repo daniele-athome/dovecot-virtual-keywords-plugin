@@ -1,11 +1,11 @@
 
-#include "config.h"
-#include "lib.h"
-#include "str-sanitize.h"
-#include "failures.h"
-#include "ostream.h"
-#include "notify-plugin.h"
-#include "mail-storage-private.h"
+#include <dovecot/config.h>
+#include <dovecot/lib.h>
+#include <dovecot/str-sanitize.h>
+#include <dovecot/failures.h>
+#include <dovecot/ostream.h>
+#include <dovecot/notify-plugin.h>
+#include <dovecot/mail-storage-private.h>
 
 #include "virtual-keywords-plugin.h"
 
