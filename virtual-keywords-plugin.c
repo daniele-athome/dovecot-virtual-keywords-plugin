@@ -132,6 +132,28 @@ virtual_keywords_mail_update_keywords(void *txn, struct mail *mail,
 }
 
 static void
+virtual_keywords_mail_copy(void *txn, struct mail *src, struct mail *dst)
+{
+    i_info("######### Copying message");
+
+    struct mail *real = NULL;
+    mail_get_backend_mail(dst, &real);
+    if (real != NULL) {
+        i_debug("###### Got real mail at %p", real);
+
+        struct mail_keywords *keywords = NULL;
+        const char *kw[] = { "Bella", NULL };
+        mailbox_keywords_create(real->box, kw, &keywords);
+        i_debug("############ Keywords created at %p", keywords);
+        if (keywords != NULL) {
+            mail_update_keywords(real, MODIFY_ADD, keywords);
+            i_info("#### Keywords updated");
+            mailbox_keywords_unref(&keywords);
+        }
+    }
+}
+
+static void
 virtual_keywords_mail_namespaces_created(struct mail_namespace *namespaces)
 {
     struct virtual_keywords_user *muser =
@@ -153,7 +175,7 @@ virtual_keywords_mail_namespaces_created(struct mail_namespace *namespaces)
 static void
 virtual_keywords_mail_user_created(struct mail_user *user)
 {
-    i_info("user created %s", user->username);
+    i_info("User created %s", user->username);
 
     struct virtual_keywords_user *muser;
     const char *str;
@@ -169,14 +191,15 @@ virtual_keywords_mail_user_created(struct mail_user *user)
 
 
 static const struct notify_vfuncs virtual_keywords_vfuncs = {
-    .mail_update_keywords = virtual_keywords_mail_update_keywords
+    .mail_update_keywords = virtual_keywords_mail_update_keywords,
+    .mail_copy = virtual_keywords_mail_copy,
 };
 
 static struct notify_context *virtual_keywords_ctx;
 
 static struct mail_storage_hooks virtual_keywords_mail_storage_hooks = {
     .mail_user_created = virtual_keywords_mail_user_created,
-    .mail_namespaces_created = virtual_keywords_mail_namespaces_created
+    .mail_namespaces_created = virtual_keywords_mail_namespaces_created,
 };
 
 void
