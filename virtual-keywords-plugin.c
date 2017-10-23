@@ -29,6 +29,7 @@ struct virtual_keywords_user {
     union mail_user_module_context module_ctx;
 
     const char* prefix;
+    const char *const *exclude;
 };
 
 static MODULE_CONTEXT_DEFINE_INIT(virtual_keywords_user_module,
@@ -115,6 +116,15 @@ virtual_keywords_create_rule(const char *patterns, const char *search)
     return t_strconcat(patterns, "\n  ", search, "\n", NULL);
 }
 
+static bool
+virtual_keywords_is_excluded(struct virtual_keywords_user *muser, const char *keyword)
+{
+    if (muser->exclude == NULL)
+        return FALSE;
+
+    return str_array_icase_find(muser->exclude, keyword);
+}
+
 static void
 virtual_keywords_mail_update_keywords(void *txn, struct mail *mail,
                               const char *const *old_keywords)
@@ -126,8 +136,10 @@ virtual_keywords_mail_update_keywords(void *txn, struct mail *mail,
     unsigned int i;
 
     for (i = 0; keywords[i] != NULL; i++) {
-        virtual_keywords_create_mailbox(mail->box->storage->user, keywords[i],
-            virtual_keywords_create_keyword_rule(muser->prefix, keywords[i]));
+        if (!virtual_keywords_is_excluded(muser, keywords[i])) {
+            virtual_keywords_create_mailbox(mail->box->storage->user, keywords[i],
+                virtual_keywords_create_keyword_rule(muser->prefix, keywords[i]));
+        }
     }
 }
 
@@ -164,6 +176,9 @@ virtual_keywords_mail_user_created(struct mail_user *user)
     str = mail_user_plugin_getenv(user, "virtual_keywords_prefix");
     muser->prefix = str == NULL ? VIRTUAL_KEYWORDS_DEFAULT_PREFIX :
                     str;
+
+    str = mail_user_plugin_getenv(user, "virtual_keywords_exclude");
+    muser->exclude = str != NULL ? t_strsplit_spaces(str, ",") : NULL;
 }
 
 
