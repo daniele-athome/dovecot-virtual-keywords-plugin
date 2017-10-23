@@ -138,7 +138,7 @@ virtual_keywords_mail_namespaces_created(struct mail_namespace *namespaces)
             VIRTUAL_KEYWORDS_USER_CONTEXT(namespaces->user);
 
     // create default virtual folders (All, Starred, ...)
-    i_info("Namespaces created for %s",
+    i_debug("Namespaces created for %s",
            str_sanitize(namespaces->user->username, MAILBOX_NAME_LOG_LEN));
 
     // All messages except Trash
@@ -153,7 +153,7 @@ virtual_keywords_mail_namespaces_created(struct mail_namespace *namespaces)
 static void
 virtual_keywords_mail_user_created(struct mail_user *user)
 {
-    i_info("user created %s", user->username);
+    i_debug("User created %s", user->username);
 
     struct virtual_keywords_user *muser;
     const char *str;
