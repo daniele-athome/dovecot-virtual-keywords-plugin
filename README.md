@@ -68,6 +68,9 @@ plugin {
 
   # namespace prefix where virtual storage is configured
   virtual_keywords_prefix = "Virtual."
+
+  # excluded keywords (no default)
+  virtual_keywords_exclude = "$MDNSent,\NonJunk,\Junk,\Recent,$Forwarded,\Answered,\Flagged,\Deleted,\Seen,\Draft"
 }
 ```
 

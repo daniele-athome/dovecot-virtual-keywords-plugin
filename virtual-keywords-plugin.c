@@ -29,7 +29,7 @@ struct virtual_keywords_user {
     union mail_user_module_context module_ctx;
 
     const char* prefix;
-    const char *const *exclude;
+    char *const *exclude;
 };
 
 static MODULE_CONTEXT_DEFINE_INIT(virtual_keywords_user_module,
@@ -122,7 +122,7 @@ virtual_keywords_is_excluded(struct virtual_keywords_user *muser, const char *ke
     if (muser->exclude == NULL)
         return FALSE;
 
-    return str_array_icase_find(muser->exclude, keyword);
+    return str_array_icase_find((const char *const *) muser->exclude, keyword);
 }
 
 static void
@@ -178,7 +178,7 @@ virtual_keywords_mail_user_created(struct mail_user *user)
                     str;
 
     str = mail_user_plugin_getenv(user, "virtual_keywords_exclude");
-    muser->exclude = str != NULL ? t_strsplit_spaces(str, ",") : NULL;
+    muser->exclude = str != NULL ? p_strsplit_spaces(user->pool, str, ",") : NULL;
 }
 
 
